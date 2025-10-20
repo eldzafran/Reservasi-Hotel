@@ -1,14 +1,34 @@
-<x-app-layout>
-    <div class="max-w-4xl mx-auto p-6">
-        <h1 class="text-2xl font-semibold mb-4">Dashboard</h1>
-        <p>Halo, {{ auth()->user()->name }}!</p>
-        <div class="mt-4 flex flex-wrap gap-3">
-            <a href="{{ route('rooms.index') }}" class="px-4 py-2 rounded bg-blue-600 text-white">Lihat Kamar</a>
-            <a href="{{ route('reservations.mine') }}" class="px-4 py-2 rounded bg-indigo-600 text-white">Reservasi Saya</a>
-            <a href="{{ route('profile.edit') }}" class="px-4 py-2 rounded bg-gray-700 text-white">Edit Profil</a>
-            @if (auth()->user()->isAdmin())
-                <a href="{{ route('admin.dashboard') }}" class="px-4 py-2 rounded bg-emerald-600 text-white">Admin Dashboard</a>
-            @endif
+@extends('layouts.app', ['title' => 'Dashboard'])
+
+@section('content')
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-semibold">Halo, {{ auth()->user()->name }} 👋</h1>
+            <p class="text-gray-600 text-sm mt-1">Kelola reservasi atau mulai cari kamar.</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ route('rooms.index') }}" class="btn-primary">Cari Kamar</a>
+            <a href="{{ route('reservations.mine') }}" class="btn-ghost">Reservasi Saya</a>
         </div>
     </div>
-</x-app-layout>
+
+    <div class="grid md:grid-cols-3 gap-6">
+        <div class="card p-6">
+            <h3 class="font-semibold">Profil</h3>
+            <p class="text-gray-600 text-sm mt-1">Perbarui nama/email atau ganti password.</p>
+            <a href="{{ route('profile.edit') }}" class="btn-ghost mt-3">Edit Profil</a>
+        </div>
+        <div class="card p-6">
+            <h3 class="font-semibold">Reservasi</h3>
+            <p class="text-gray-600 text-sm mt-1">Lihat daftar & batalkan sebelum check-in.</p>
+            <a href="{{ route('reservations.mine') }}" class="btn-ghost mt-3">Lihat Reservasi</a>
+        </div>
+        @if(auth()->user()->isAdmin())
+        <div class="card p-6">
+            <h3 class="font-semibold">Admin</h3>
+            <p class="text-gray-600 text-sm mt-1">Kelola kamar & konfirmasi reservasi.</p>
+            <a href="{{ route('admin.dashboard') }}" class="btn-ghost mt-3">Masuk Admin</a>
+        </div>
+        @endif
+    </div>
+@endsection

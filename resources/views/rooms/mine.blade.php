@@ -1,66 +1,60 @@
-<x-app-layout>
-    <div class="max-w-5xl mx-auto p-6">
-        <h1 class="text-2xl font-semibold mb-4">Reservasi Saya</h1>
+@extends('layouts.app', ['title' => 'Reservasi Saya'])
 
-        @if (session('success'))
-            <div class="p-3 mb-4 bg-green-100 border border-green-300 rounded">
-                {{ session('success') }}
-            </div>
-        @endif
+@section('content')
+<h1 class="text-2xl font-semibold mb-6">Reservasi Saya</h1>
 
-        @if ($errors->any())
-            <div class="p-3 mb-4 bg-red-100 border border-red-300 rounded">
-                <ul class="list-disc ms-6">
-                    @foreach ($errors->all() as $e) <li>{{ $e }}</li> @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if ($reservations->count() === 0)
-            <p>Belum ada reservasi.</p>
-        @else
-            <div class="overflow-auto">
-                <table class="min-w-full border">
-                    <thead>
-                        <tr class="bg-gray-100">
-                            <th class="p-2 border">Kamar</th>
-                            <th class="p-2 border">Check-in</th>
-                            <th class="p-2 border">Check-out</th>
-                            <th class="p-2 border">Tamu</th>
-                            <th class="p-2 border">Status</th>
-                            <th class="p-2 border">Total</th>
-                            <th class="p-2 border">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($reservations as $r)
-                            <tr>
-                                <td class="p-2 border">{{ $r->room->name }}</td>
-                                <td class="p-2 border">{{ $r->check_in->format('d-m-Y') }}</td>
-                                <td class="p-2 border">{{ $r->check_out->format('d-m-Y') }}</td>
-                                <td class="p-2 border">{{ $r->guests }}</td>
-                                <td class="p-2 border capitalize">{{ $r->status }}</td>
-                                <td class="p-2 border">Rp {{ number_format($r->total_price,0,',','.') }}</td>
-                                <td class="p-2 border">
-                                    @if($r->status !== 'cancelled' && \Illuminate\Support\Carbon::today()->lt($r->check_in))
-                                        <form action="{{ route('reservations.cancel',$r) }}" method="POST"
-                                              onsubmit="return confirm('Batalkan reservasi ini?');" class="inline-block">
-                                            @csrf @method('PATCH')
-                                            <button class="px-3 py-1 rounded bg-red-600 text-white">Cancel</button>
-                                        </form>
-                                    @else
-                                        <span class="text-gray-500 text-sm">—</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-4">
-                {{ $reservations->links() }}
-            </div>
-        @endif
+@if ($reservations->count() === 0)
+    <div class="card p-6">
+        <p class="text-gray-600">Belum ada reservasi. <a class="text-primary underline" href="{{ route('rooms.index') }}">Cari kamar</a>.</p>
     </div>
-</x-app-layout>
+@else
+    <div class="card overflow-hidden">
+        <div class="overflow-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="bg-gray-50 text-left">
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Kamar</th>
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Check-in</th>
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Check-out</th>
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Tamu</th>
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Status</th>
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Total</th>
+                        <th class="px-5 py-3 text-sm font-medium text-gray-600">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    @foreach($reservations as $r)
+                        <tr>
+                            <td class="px-5 py-4">{{ $r->room->name }}</td>
+                            <td class="px-5 py-4">{{ $r->check_in->format('d-m-Y') }}</td>
+                            <td class="px-5 py-4">{{ $r->check_out->format('d-m-Y') }}</td>
+                            <td class="px-5 py-4">{{ $r->guests }}</td>
+                            <td class="px-5 py-4">
+                                @php
+                                    $map = ['pending'=>'badge-yellow','confirmed'=>'badge-green','cancelled'=>'badge-red'];
+                                @endphp
+                                <span class="{{ $map[$r->status] ?? 'badge' }}">{{ ucfirst($r->status) }}</span>
+                            </td>
+                            <td class="px-5 py-4">Rp {{ number_format($r->total_price,0,',','.') }}</td>
+                            <td class="px-5 py-4">
+                                @if($r->status !== 'cancelled' && \Illuminate\Support\Carbon::today()->lt($r->check_in))
+                                    <form action="{{ route('reservations.cancel',$r) }}" method="POST"
+                                          onsubmit="return confirm('Batalkan reservasi ini?');" class="inline-block">
+                                        @csrf @method('PATCH')
+                                        <button class="btn bg-red-600 text-white hover:bg-red-700">Batal</button>
+                                    </form>
+                                @else
+                                    <span class="text-gray-400 text-sm">—</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-4 border-t">
+            {{ $reservations->links() }}
+        </div>
+    </div>
+@endif
+@endsection

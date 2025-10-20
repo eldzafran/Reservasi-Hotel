@@ -9,9 +9,6 @@ class Reservation extends Model
 {
     use HasFactory;
 
-    /**
-     * Mass assignable.
-     */
     protected $fillable = [
         'user_id',
         'room_id',
@@ -19,63 +16,46 @@ class Reservation extends Model
         'check_out',
         'guests',
         'total_price',
-        'status',
+        'status', // pending | confirmed | cancelled
     ];
 
-    /**
-     * Casts untuk tanggal & numeric.
-     */
     protected $casts = [
-        'check_in'    => 'date',
-        'check_out'   => 'date',
-        'guests'      => 'integer',
-        'total_price' => 'decimal:2',
+        'check_in'   => 'date',
+        'check_out'  => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    /**
-     * Relasi ke user.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Relasi ke room.
-     */
     public function room()
     {
         return $this->belongsTo(Room::class);
     }
 
     /**
-     * Scope untuk status tertentu (misal: confirmed).
-     */
-    public function scopeStatus($query, string $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Helper: cek apakah periode reservasi ini bertabrakan
-     * dengan periode [start, end] (inklusif) pada kamar yang sama,
-     * untuk status tertentu (default: confirmed).
+     * Cek konflik tanggal menggunakan aturan interval [start, end):
+     * overlap jika (existing.start < new.end) && (existing.end > new.start)
+     *
+     * @param int    $roomId
+     * @param string $startDate  format YYYY-MM-DD
+     * @param string $endDate    format YYYY-MM-DD
+     * @param array  $considerStatuses default ['confirmed']
      */
     public static function hasConflict(
         int $roomId,
-        string $startDate, // 'Y-m-d'
-        string $endDate,   // 'Y-m-d'
+        string $startDate,
+        string $endDate,
         array $considerStatuses = ['confirmed']
     ): bool {
         return static::where('room_id', $roomId)
             ->whereIn('status', $considerStatuses)
             ->where(function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('check_in', [$startDate, $endDate])
-                  ->orWhereBetween('check_out', [$startDate, $endDate])
-                  ->orWhere(function ($q2) use ($startDate, $endDate) {
-                      $q2->where('check_in', '<=', $startDate)
-                         ->where('check_out', '>=', $endDate);
-                  });
+                $q->where('check_in', '<', $endDate)    // existing.start < new.end
+                  ->where('check_out', '>', $startDate); // existing.end   > new.start
             })
             ->exists();
     }

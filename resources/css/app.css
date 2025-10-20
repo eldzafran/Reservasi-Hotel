@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* komponen kecil */
+.btn { @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 font-medium transition; }
+.btn-primary { @apply btn bg-primary text-white hover:bg-primary-dark; }
+.btn-ghost { @apply btn bg-white text-ink hover:bg-gray-50 border border-gray-200; }
+.badge { @apply inline-block rounded px-2 py-1 text-xs font-medium; }
+.badge-green { @apply badge bg-green-100 text-green-700; }
+.badge-yellow{ @apply badge bg-yellow-100 text-yellow-700; }
+.badge-red   { @apply badge bg-red-100 text-red-700; }
+.card { @apply rounded-2xl border border-gray-100 bg-white shadow-soft; }

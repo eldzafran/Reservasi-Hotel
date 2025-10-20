@@ -1,68 +1,52 @@
-<x-app-layout>
-    <div class="max-w-4xl mx-auto p-6">
-        <h1 class="text-2xl font-semibold mb-4">Edit Kamar</h1>
+@extends('layouts.app', ['title' => 'Edit Kamar'])
 
-        @if ($errors->any())
-            <div class="p-3 mb-4 bg-red-100 border border-red-300 rounded">
-                <ul class="list-disc ms-6">
-                    @foreach ($errors->all() as $e) <li>{{ $e }}</li> @endforeach
-                </ul>
-            </div>
-        @endif
+@section('content')
+<h1 class="text-2xl font-semibold mb-6">Edit Kamar</h1>
 
-        <form method="POST" action="{{ route('admin.rooms.update',$room) }}" enctype="multipart/form-data" class="space-y-4">
-            @csrf @method('PUT')
+<div class="card p-6">
+    <form method="POST" action="{{ route('admin.rooms.update',$room) }}" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @csrf @method('PUT')
 
-            <div>
-                <label class="block text-sm mb-1">Nama</label>
-                <input type="text" name="name" value="{{ old('name',$room->name) }}" class="w-full border rounded px-3 py-2" required>
-            </div>
+        <label class="text-sm text-gray-600">Nama
+            <input type="text" name="name" value="{{ old('name',$room->name) }}" class="mt-1 w-full rounded-lg border-gray-200" required>
+        </label>
 
-            <div class="grid md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm mb-1">Tipe</label>
-                    <select name="type" class="w-full border rounded px-3 py-2" required>
-                        @foreach (['standard','deluxe','suite'] as $t)
-                            <option value="{{ $t }}" @selected(old('type',$room->type)==$t)>{{ ucfirst($t) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm mb-1">Kapasitas</label>
-                    <input type="number" name="capacity" min="1" value="{{ old('capacity',$room->capacity) }}" class="w-full border rounded px-3 py-2" required>
-                </div>
-                <div>
-                    <label class="block text-sm mb-1">Harga per Malam</label>
-                    <input type="number" name="price_per_night" min="0" value="{{ old('price_per_night',$room->price_per_night) }}" class="w-full border rounded px-3 py-2" required>
-                </div>
-            </div>
+        <label class="text-sm text-gray-600">Tipe
+            <select name="type" class="mt-1 w-full rounded-lg border-gray-200" required>
+                @foreach (['standard','deluxe','suite'] as $t)
+                    <option value="{{ $t }}" @selected(old('type',$room->type)==$t)>{{ ucfirst($t) }}</option>
+                @endforeach
+            </select>
+        </label>
 
-            <div>
-                <label class="block text-sm mb-1">Status</label>
-                <select name="status" class="w-full border rounded px-3 py-2" required>
-                    @foreach (['available','maintenance'] as $s)
-                        <option value="{{ $s }}" @selected(old('status',$room->status)==$s)>{{ ucfirst($s) }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <label class="text-sm text-gray-600">Kapasitas
+            <input type="number" name="capacity" value="{{ old('capacity',$room->capacity) }}" min="1" class="mt-1 w-full rounded-lg border-gray-200" required>
+        </label>
 
-            <div>
-                <label class="block text-sm mb-1">Deskripsi</label>
-                <textarea name="description" rows="4" class="w-full border rounded px-3 py-2">{{ old('description',$room->description) }}</textarea>
-            </div>
+        <label class="text-sm text-gray-600">Harga / Malam
+            <input type="number" name="price_per_night" value="{{ old('price_per_night',$room->price_per_night) }}" min="0" class="mt-1 w-full rounded-lg border-gray-200" required>
+        </label>
 
-            <div>
-                <label class="block text-sm mb-1">Gambar (opsional)</label>
-                <input type="file" name="image" accept="image/*" class="w-full border rounded px-3 py-2">
-                @if($room->image_path)
-                    <img src="{{ asset('storage/'.$room->image_path) }}" alt="{{ $room->name }}" class="mt-2 w-40 h-28 object-cover rounded">
-                @endif
-            </div>
+        <label class="text-sm text-gray-600 md:col-span-2">Deskripsi
+            <textarea name="description" rows="4" class="mt-1 w-full rounded-lg border-gray-200">{{ old('description',$room->description) }}</textarea>
+        </label>
 
-            <div class="flex gap-3">
-                <button class="px-4 py-2 rounded bg-emerald-600 text-white">Update</button>
-                <a href="{{ route('admin.rooms.index') }}" class="px-4 py-2 rounded bg-gray-600 text-white">Kembali</a>
-            </div>
-        </form>
-    </div>
-</x-app-layout>
+        <label class="text-sm text-gray-600">Status
+            <select name="status" class="mt-1 w-full rounded-lg border-gray-200" required>
+                @foreach (['available','maintenance'] as $s)
+                    <option value="{{ $s }}" @selected(old('status',$room->status)==$s)>{{ ucfirst($s) }}</option>
+                @endforeach
+            </select>
+        </label>
+
+        <label class="text-sm text-gray-600">Gambar (opsional, akan mengganti)
+            <input type="file" name="image" class="mt-1 w-full rounded-lg border-gray-200">
+        </label>
+
+        <div class="md:col-span-2 mt-2">
+            <button class="btn-primary">Update</button>
+            <a href="{{ route('admin.rooms.index') }}" class="btn-ghost">Kembali</a>
+        </div>
+    </form>
+</div>
+@endsection
