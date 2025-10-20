@@ -1,8 +1,16 @@
 <x-app-layout>
     <div class="max-w-6xl mx-auto p-6">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h1 class="text-2xl font-semibold">Admin Dashboard</h1>
-            <a href="{{ route('admin.rooms.create') }}" class="px-4 py-2 rounded bg-emerald-600 text-white">Tambah Kamar</a>
+
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('admin.reservations.index') }}" class="px-4 py-2 rounded bg-indigo-600 text-white">
+                    Lihat Reservasi
+                </a>
+                <a href="{{ route('admin.rooms.create') }}" class="px-4 py-2 rounded bg-emerald-600 text-white">
+                    Tambah Kamar
+                </a>
+            </div>
         </div>
 
         <div class="grid md:grid-cols-4 gap-4 mb-6">

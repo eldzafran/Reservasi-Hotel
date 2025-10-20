@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 // Controllers
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RoomController as AdminRoomController;
+use App\Http\Controllers\Admin\ReservationAdminController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ProfileController;
@@ -16,16 +17,14 @@ use App\Http\Middleware\AdminMiddleware;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', fn() => view('welcome'))->name('home');
 
 // Auth routes dari Breeze
 require __DIR__ . '/auth.php';
 
-// ------------------------------
-// USER AREA (harus login)
-// ------------------------------
+/* ------------------------------
+| USER AREA (login)
+|------------------------------ */
 Route::middleware(['auth'])->group(function () {
     // Dashboard user
     Route::get('/dashboard', function () {
@@ -35,36 +34,35 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Profile (supaya route('profile.edit') tidak error)
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Reservasi user
+    // Aksi pesan & halaman "Reservasi Saya"
     Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
     Route::get('/my-reservations', [ReservationController::class, 'myReservations'])->name('reservations.mine');
+    Route::patch('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
 });
 
-// ------------------------------
-// PUBLIC AREA
-// ------------------------------
-Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
-Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
+/* ------------------------------
+| PUBLIC AREA (tanpa login)
+|------------------------------ */
+Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');   // daftar kamar
+Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show'); // detail + form pesan
 
-// ------------------------------
-// ADMIN AREA (pakai class middleware langsung)
-// ------------------------------
+/* ------------------------------
+| ADMIN AREA
+|------------------------------ */
 Route::middleware(['auth', AdminMiddleware::class])
-    ->prefix('admin')
-    ->as('admin.')
+    ->prefix('admin')->as('admin.')
     ->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-        // CRUD kamar
         Route::resource('rooms', AdminRoomController::class);
 
-        // (opsional) jika nanti ingin tambah route konfirmasi reservasi
-        // use App\Http\Controllers\Admin\ReservationAdminController;
-        // Route::patch('/reservations/{reservation}/confirm', [ReservationAdminController::class, 'confirm'])->name('reservations.confirm');
-        // Route::patch('/reservations/{reservation}/cancel', [ReservationAdminController::class, 'cancel'])->name('reservations.cancel');
+        Route::get('/reservations', [ReservationAdminController::class, 'index'])->name('reservations.index');
+        Route::get('/reservations/{reservation}', [ReservationAdminController::class, 'show'])->name('reservations.show');
+        Route::patch('/reservations/{reservation}/confirm', [ReservationAdminController::class, 'confirm'])->name('reservations.confirm');
+        Route::patch('/reservations/{reservation}/cancel', [ReservationAdminController::class, 'cancel'])->name('reservations.cancel');
+        Route::delete('/reservations/{reservation}', [ReservationAdminController::class, 'destroy'])->name('reservations.destroy');
     });

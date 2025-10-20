@@ -9,9 +9,7 @@ use Illuminate\Support\Carbon;
 
 class ReservationController extends Controller
 {
-    /**
-     * Buat reservasi baru (user harus login).
-     */
+    // Buat reservasi (user login)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -23,33 +21,33 @@ class ReservationController extends Controller
 
         $room = Room::findOrFail($data['room_id']);
 
-        // Hitung jumlah malam
+        // Tolak bila kamar maintenance
+        if ($room->status === 'maintenance') {
+            return back()->withErrors(['room_id' => 'Kamar sedang maintenance, silakan pilih kamar lain.'])->withInput();
+        }
+
         $checkIn  = Carbon::parse($data['check_in']);
         $checkOut = Carbon::parse($data['check_out']);
         $nights   = $checkIn->diffInDays($checkOut);
-
         if ($nights <= 0) {
             return back()->withErrors(['check_out' => 'Masa inap minimal 1 malam.'])->withInput();
         }
 
-        // Cek kapasitas
         if ((int)$data['guests'] > (int)$room->capacity) {
             return back()->withErrors(['guests' => 'Jumlah tamu melebihi kapasitas kamar ('.$room->capacity.').'])->withInput();
         }
 
-        // Cek bentrok jadwal (status confirmed)
+        // Cegah tanggal bentrok dengan pending/confirmed
         $hasConflict = Reservation::hasConflict(
             roomId: $room->id,
             startDate: $checkIn->toDateString(),
             endDate: $checkOut->toDateString(),
-            considerStatuses: ['confirmed']
+            considerStatuses: ['confirmed','pending']
         );
-
         if ($hasConflict) {
-            return back()->withErrors(['room_id' => 'Tanggal tersebut sudah terisi untuk kamar ini.'])->withInput();
+            return back()->withErrors(['room_id' => 'Tanggal tersebut tidak tersedia untuk kamar ini.'])->withInput();
         }
 
-        // Hitung total harga
         $total = $nights * (float)$room->price_per_night;
 
         Reservation::create([
@@ -59,15 +57,13 @@ class ReservationController extends Controller
             'check_out'   => $checkOut->toDateString(),
             'guests'      => (int)$data['guests'],
             'total_price' => $total,
-            'status'      => 'pending', // admin akan mengkonfirmasi
+            'status'      => 'pending',
         ]);
 
         return redirect()->route('reservations.mine')->with('success', 'Reservasi dibuat dan menunggu konfirmasi.');
     }
 
-    /**
-     * Daftar reservasi milik user login.
-     */
+    // Daftar reservasi milik user
     public function myReservations(Request $request)
     {
         $reservations = Reservation::with('room')
@@ -76,5 +72,20 @@ class ReservationController extends Controller
             ->paginate(10);
 
         return view('reservations.mine', compact('reservations'));
+    }
+
+    // User membatalkan reservasinya
+    public function cancel(Request $request, Reservation $reservation)
+    {
+        if ($reservation->user_id !== $request->user()->id) {
+            abort(403);
+        }
+        if (Carbon::today()->gte($reservation->check_in)) {
+            return back()->withErrors(['status' => 'Tidak dapat dibatalkan pada/ setelah tanggal check-in.']);
+        }
+        if ($reservation->status !== 'cancelled') {
+            $reservation->update(['status' => 'cancelled']);
+        }
+        return back()->with('success', 'Reservasi dibatalkan.');
     }
 }

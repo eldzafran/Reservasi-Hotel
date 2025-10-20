@@ -45,10 +45,9 @@ class RoomController extends Controller
             'price_per_night' => ['required', 'numeric', 'min:0'],
             'description'     => ['nullable', 'string'],
             'status'          => ['required', 'in:available,maintenance'],
-            'image'           => ['nullable', 'image', 'max:2048'], // optional upload
+            'image'           => ['nullable', 'image', 'max:2048'],
         ]);
 
-        // Simpan file gambar (opsional)
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('rooms', 'public');
@@ -68,7 +67,7 @@ class RoomController extends Controller
     }
 
     /**
-     * Tampilkan detail kamar (opsional untuk admin).
+     * Detail kamar (opsional).
      */
     public function show(Room $room)
     {
@@ -76,7 +75,7 @@ class RoomController extends Controller
     }
 
     /**
-     * Form edit kamar.
+     * Form edit.
      */
     public function edit(Room $room)
     {
@@ -100,19 +99,18 @@ class RoomController extends Controller
             'image'           => ['nullable', 'image', 'max:2048'],
         ]);
 
-        // Update file gambar (opsional)
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('rooms', 'public');
-            $room->image_path = $imagePath;
+            $room->image_path = $request->file('image')->store('rooms', 'public');
         }
 
-        $room->name            = $data['name'];
-        $room->type            = $data['type'];
-        $room->capacity        = (int)$data['capacity'];
-        $room->price_per_night = (float)$data['price_per_night'];
-        $room->description     = $data['description'] ?? null;
-        $room->status          = $data['status'];
-        $room->save();
+        $room->fill([
+            'name'            => $data['name'],
+            'type'            => $data['type'],
+            'capacity'        => (int)$data['capacity'],
+            'price_per_night' => (float)$data['price_per_night'],
+            'description'     => $data['description'] ?? null,
+            'status'          => $data['status'],
+        ])->save();
 
         return redirect()->route('admin.rooms.index')->with('success', 'Kamar berhasil diperbarui.');
     }
@@ -123,7 +121,6 @@ class RoomController extends Controller
     public function destroy(Room $room)
     {
         $room->delete();
-
         return redirect()->route('admin.rooms.index')->with('success', 'Kamar berhasil dihapus.');
     }
 }
