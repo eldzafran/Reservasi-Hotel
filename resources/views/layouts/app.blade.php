@@ -15,7 +15,7 @@
                 <svg width="28" height="28" viewBox="0 0 24 24" class="-mt-0.5" aria-hidden="true">
                     <path fill="currentColor" d="M12 2l7 7-1.4 1.4L18 9.8V20a2 2 0 0 1-2 2h-4v-6H8v6H6a2 2 0 0 1-2-2V9.8L6.4 10.4 5 9z"/>
                 </svg>
-                <span class="text-xl">ElHotel</span>
+                <span class="text-xl">Bohemian Reservation</span>
             </a>
 
             <nav class="flex items-center gap-2">
@@ -72,7 +72,7 @@
     <!-- FOOTER -->
     <footer class="border-t bg-white">
         <div class="mx-auto max-w-7xl px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p class="text-sm text-gray-500">© {{ date('Y') }} ElHotel. All rights reserved.</p>
+            <p class="text-sm text-gray-500">© {{ date('Y') }} Bohemian Reservation. All rights reserved.</p>
             <div class="flex gap-4 text-sm">
                 <a class="text-gray-600 hover:text-ink" href="{{ route('rooms.index') }}">Kamar</a>
                 <a class="text-gray-600 hover:text-ink" href="#">Kebijakan Privasi</a>
